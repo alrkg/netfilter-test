@@ -11,6 +11,15 @@
 
 #include <libnetfilter_queue/libnetfilter_queue.h>
 
+void parse(int argc) {
+    if (argc != 2) {
+        fprintf(stderr, "syntax : netfilter-test <host>\n");
+        fprintf(stderr, "netfilter-test test.gilgil.net\n");
+        exit(1);
+    }
+}
+
+
 void setupNFQueue() {
     system("sudo iptables -F");
     system("sudo iptables -A INPUT -j NFQUEUE --queue-num 0");
@@ -118,11 +127,11 @@ static int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
 
 int main(int argc, char* argv[])
 {
+    parse(argc);
     setupNFQueue();
 
     struct nfq_handle *h;
     struct nfq_q_handle *qh;
-    struct nfnl_handle *nh;
     int fd;
     int rv;
     char buf[4096] __attribute__ ((aligned));
@@ -147,7 +156,7 @@ int main(int argc, char* argv[])
     }
 
     printf("binding this socket to queue '0'\n");
-    std::string unsafeHost = (argc < 2) ? "" : argv[1];
+    std::string unsafeHost = argv[1];
     qh = nfq_create_queue(h,  0, &cb, &unsafeHost);
     if (!qh) {
         fprintf(stderr, "error during nfq_create_queue()\n");
